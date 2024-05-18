@@ -9,6 +9,8 @@ def compress(path):
     result = []
     temp = ""
     input = open(path, "rb").read()
+    if not os.path.exists('saved'):
+        os.makedirs('saved')
 
     for i in range(0, DICTIONARY_SIZE):
         dictionary[str(chr(i))] = i
@@ -27,14 +29,19 @@ def compress(path):
         result.append(dictionary[temp])
 
 
-    output = open(PATH+"//"+"compressed_lzw.bin", "wb")
+    output = open(PATH+"//"+"saved/compressed_lzw.bin", "wb")
     pickle.dump(result, output)
 
 def decompress():
     DICTIONARY_SIZE = 256
     dictionary = {}
     result = []
-    input = pickle.load(open(PATH+"//"+"compressed_lzw.bin", "rb"))
+    try:
+        input = pickle.load(open(PATH+"//"+"saved/compressed_lzw.bin", "rb"))
+    except Exception as e:
+        return e
+    if not os.path.exists('saved'):
+        os.makedirs('saved')
 
     for i in range(0, DICTIONARY_SIZE):
         dictionary[i] = str(chr(i))
@@ -55,7 +62,7 @@ def decompress():
         previous = aux
 
 
-    output = open(PATH+"//"+"decompressed_lzw.txt", "w")
+    output = open(PATH+"//"+"saved/decompressed_lzw.txt", "w")
     for l in result:
             output.write(l)
     output.close()

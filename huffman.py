@@ -1,5 +1,6 @@
 import heapq
 from collections import defaultdict
+import os
 
 class Node:
     def __init__(self, freq, symbol=None, left=None, right=None):
@@ -64,7 +65,10 @@ def compress(path):
     encoded_data = encode(data, codebook)
 
     byte_data = int(encoded_data,2)
-    with open('compressed_huffman.bin' , 'wb') as f:
+
+    if not os.path.exists('saved'):
+        os.makedirs('saved')
+    with open('saved/compressed_huffman.bin' , 'wb') as f:
         f.write(byte_data.to_bytes((byte_data.bit_length() + 7) // 8, byteorder='big'))
 
     return encoded_data, huffman_tree
@@ -72,5 +76,7 @@ def compress(path):
 def decompress(encoded_data, huffman_tree):
     decoded_data = decode(encoded_data, huffman_tree)
 
-    with open('decompressed_huffman.txt' , 'w') as f:
+    if not os.path.exists('saved'):
+        os.makedirs('saved')
+    with open('saved/decompressed_huffman.txt' , 'w') as f:
         f.write(decoded_data)
