@@ -1,6 +1,5 @@
 import heapq
 from collections import defaultdict
-from PIL import Image
 
 class Node:
     def __init__(self, freq, symbol=None, left=None, right=None):
@@ -32,13 +31,13 @@ def build_huffman_codes(node, prefix="", codebook=None):
         build_huffman_codes(node.right, prefix + "1", codebook)
     return codebook
 
-def encode_image(image_data, codebook):
+def encode(data, codebook):
     encoded_data = ""
-    for pixel in image_data:
-        encoded_data += codebook[pixel]
+    for item in data:
+        encoded_data += codebook[item]
     return encoded_data
 
-def decode_image(encoded_data, root):
+def decode(encoded_data, root):
     decoded_data = ""
     node = root
     for bit in encoded_data:
@@ -47,44 +46,31 @@ def decode_image(encoded_data, root):
         else:
             node = node.right
         if node.symbol is not None:
-            decoded_data += node.symbol
+            decoded_data += str(node.symbol)
             node = root
     return decoded_data
 
-def compress_image(image_data):
+def compress(path):
+    with open(path, 'r') as f:
+        data = f.read()
+
     frequencies = defaultdict(int)
-    for pixel in image_data:
-        frequencies[pixel] += 1
+    for item in data:
+        frequencies[item] += 1
 
     huffman_tree = build_huffman_tree(frequencies)
     codebook = build_huffman_codes(huffman_tree)
 
-    encoded_data = encode_image(image_data, codebook)
+    encoded_data = encode(data, codebook)
+
+    byte_data = int(encoded_data,2)
+    with open('compressed_huffman.bin' , 'wb') as f:
+        f.write(byte_data.to_bytes((byte_data.bit_length() + 7) // 8, byteorder='big'))
+
     return encoded_data, huffman_tree
 
-def decompress_image(encoded_data, huffman_tree):
-    decoded_data = decode_image(encoded_data, huffman_tree)
-    return decoded_data
+def decompress(encoded_data, huffman_tree):
+    decoded_data = decode(encoded_data, huffman_tree)
 
-def get_image_data(image_path):
-    try:
-        image = Image.open(image_path)
-        image = image.convert("L")
-        image_data = image.tobytes()
-        return image_data
-    except Exception as e:
-        print("Error:", e)
-        return None
-
-# Usage
-image_path = "ness.png"
-image_data = get_image_data(image_path)
-#if image_data:
-#    print("Image data:", image_data)
-#else:
-#    print("Failed to get image data.")
-
-compressed_data, huffman_tree = compress_image(image_data)
-#print("Compressed data:", compressed_data)
-#decompressed_data = decompress_image(compressed_data, huffman_tree)
-#print("Decompressed data:", decompressed_data)
+    with open('decompressed_huffman.txt' , 'w') as f:
+        f.write(decoded_data)
